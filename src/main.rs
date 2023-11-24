@@ -4,5 +4,5 @@ mod mem;
 mod elf;
 
 fn main() {
-    elf_init();
+    elf_init().expect("[FATAL] Failed to load Elf");
 }
