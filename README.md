@@ -1,6 +1,6 @@
 # R $^2$ EMU
 
-A RISC-V emulator in Rust.
+A **R**ISC-V **EMU**lator in **R**ust.
 
 Features:
 
