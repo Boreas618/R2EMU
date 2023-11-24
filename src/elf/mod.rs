@@ -6,7 +6,6 @@ use goblin::elf::Elf;
 pub enum ElfError {
     FileReadError(String),
     ParseError(String),
-    SectionMissing(String),
 }
 
 impl std::fmt::Display for ElfError {
@@ -14,15 +13,19 @@ impl std::fmt::Display for ElfError {
         match *self {
             ElfError::FileReadError(ref err) => write!(f, "File read error: {}", err),
             ElfError::ParseError(ref err) => write!(f, "Parse error: {}", err),
-            ElfError::SectionMissing(ref section) => write!(f, "Missing section: {}", section),
         }
     }
 }
 
 impl Error for ElfError {}
 
-struct TargetElf {
-    _path: String
+pub struct Section {
+    pub name: String,
+    pub data: Vec<u8>
+}
+
+pub struct TargetElf {
+    pub sections: Vec<Section>
 }
 
 impl TargetElf {
@@ -30,28 +33,24 @@ impl TargetElf {
         let buffer = fs::read(&path).map_err(|e| ElfError::FileReadError(e.to_string()))?;
         let elf = Elf::parse(&buffer).map_err(|e| ElfError::ParseError(e.to_string()))?;
 
-        // Do some launching checks
-        let mut sections: Vec<&str> = vec![];
+        let mut sections: Vec<Section> = vec![];
 
-        for sh in elf.section_headers {
-            let name = elf.shdr_strtab.get_at(sh.sh_name).unwrap_or_default();
-            sections.push(name);
+        for section in &elf.section_headers {
+            let name = elf.shdr_strtab.get_at(section.sh_name).unwrap_or_default();
+            if name == ".text" || name == ".data" {
+                let offset = section.file_range().unwrap().start;
+                let size = section.file_range().unwrap().end - offset;
+                let data = &buffer[offset..offset+size];
+                sections.push( Section{ name: name.to_string(), data: data.to_vec()} );
+            }
         }
 
-        if !sections.contains(&".text") {
-            return Err(ElfError::SectionMissing(".text".to_string()));
-        }
-
-        if !sections.contains(&".data") {
-            return Err(ElfError::SectionMissing(".data".to_string()));
-        }
-
-        Ok(TargetElf { _path: path.to_string() })
+        Ok(TargetElf { sections: sections })
     }
 }
 
-pub fn elf_init() -> Result<(), ElfError>{
-    let _target_elf = TargetElf::new("./executables/hello-world")?;
+pub fn elf_init(path: &str) -> Result<TargetElf, ElfError>{
+    let target_elf = TargetElf::new(path)?;
 
-    Ok(())
+    Ok(target_elf)
 }
