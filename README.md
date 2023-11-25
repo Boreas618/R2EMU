@@ -6,3 +6,21 @@ Features:
 
 * Load and run RISC-V executables
 * Simple GDB-like tool for debugging
+
+Build and Run:
+
+1. Compile your `.c` program into elf:
+
+   ```shell
+   riscv64-unknown-elf-gcc -march=rv64imafd -o hello-world hw.c
+   ```
+
+   Note that we remove the compressed instructions in order to make instruction decoding easier.
+
+2. Place the elf under ./executables
+
+3. Build and run:
+
+   ```shell
+   cargo run
+   ```

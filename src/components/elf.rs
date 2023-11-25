@@ -21,11 +21,13 @@ impl Error for ElfError {}
 
 pub struct Section {
     pub name: String,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
+    pub start_addr: u64
 }
 
 pub struct TargetElf {
-    pub sections: Vec<Section>
+    pub sections: Vec<Section>,
+    pub main_addr: usize
 }
 
 impl TargetElf {
@@ -41,11 +43,22 @@ impl TargetElf {
                 let offset = section.file_range().unwrap().start;
                 let size = section.file_range().unwrap().end - offset;
                 let data = &buffer[offset..offset+size];
-                sections.push( Section{ name: name.to_string(), data: data.to_vec()} );
+                sections.push(
+                    Section{ name: name.to_string(), data: data.to_vec(), start_addr: section.sh_addr} );
             }
         }
 
-        Ok(TargetElf { sections: sections })
+        let mut main_addr = 0;
+        for sym in &elf.syms {
+            if let Some(name) = elf.strtab.get_at(sym.st_name) {
+                if name == "main" {
+                    main_addr = sym.st_value;
+                    break;
+                }
+            }
+        }
+
+        Ok(TargetElf { sections: sections, main_addr: main_addr as usize })
     }
 }
 
