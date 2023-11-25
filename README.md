@@ -2,12 +2,12 @@
 
 A **R**ISC-V **EMU**lator in **R**ust.
 
-Features:
+## Features
 
 * Load and run RISC-V executables
 * Simple GDB-like tool for debugging
 
-Build and Run:
+## Build and Run
 
 1. Compile your `.c` program into elf:
 
