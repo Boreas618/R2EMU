@@ -12,7 +12,7 @@ A **R**ISC-V **EMU**lator in **R**ust.
 1. Compile your `.c` program into elf:
 
    ```shell
-   riscv64-unknown-elf-gcc -march=rv64imafd -o hello-world hw.c
+   riscv64-unknown-elf-gcc -march=rv64g -o <name-of-output-file> <name-of-source-files>
    ```
 
    Note that we remove the compressed instructions in order to make instruction decoding easier.
